@@ -53,14 +53,6 @@ h1{font-size:18px;margin:0;font-weight:650;white-space:nowrap}
 .stack{display:flex;flex-direction:column;gap:18px;margin-top:18px}
 .slot{position:relative}
 .slot::before{content:"";position:absolute;top:-18px;left:50%;width:2px;height:18px;background:var(--line);transform:translateX(-1px)}
-@media (max-width:899px){
-  .families{grid-template-columns:repeat(2,minmax(0,1fr));gap:22px 14px}
-  .families::before,.fam-col::before,.root-wrap::after{display:none}
-  .root-wrap{padding-bottom:18px}
-  .families{padding-top:0}
-  .fam-col{background:var(--bg);border-radius:14px;padding:10px}
-}
-@media (max-width:560px){.families{grid-template-columns:1fr}}
 
 .node{display:block;width:100%;text-align:center;border:1px solid;border-radius:12px;padding:10px 8px;cursor:pointer;font:inherit;transition:transform .12s ease,box-shadow .12s ease,opacity .2s}
 .node:hover{transform:translateY(-1px);box-shadow:0 2px 10px rgba(0,0,0,.08)}
@@ -146,6 +138,41 @@ ul.l li{margin:3px 0}
 .gi{background:var(--bg);border-radius:10px;padding:10px 12px;font-size:13.5px}
 .gi b{display:block;font-size:14px;margin-bottom:2px}
 footer{max-width:1500px;margin:0 auto;padding:0 16px 14px;font-size:12px;color:var(--muted)}
+
+/* ===== Mobile and tablet only (below 900px). Desktop styles above are unchanged. ===== */
+/* Tablet: the same 4-column tree, with smaller boxes */
+@media (min-width:700px) and (max-width:899px){
+  .families{gap:8px}
+  .node{padding:8px 4px}
+  .node .t{font-size:13.5px}
+  .node .s{font-size:11.5px}
+  .node .g{display:none}
+}
+/* Phone: vertical folder-style tree with connecting lines */
+@media (max-width:699px){
+  .tree{padding:10px 10px 14px}
+  .dir{font-size:0}
+  .dir::after{content:"In each family: top = basic, bottom = advanced";font-size:12px}
+  .root-wrap{display:block;padding-bottom:0}
+  .root-wrap::after{display:none}
+  .root-wrap .node{max-width:none}
+  .families{display:block;padding:0 0 0 14px;margin:0;position:relative}
+  .families::before{display:none}
+  .fam-col{position:relative;padding:8px 0 0 24px}
+  .fam-col::before{content:"";position:absolute;left:0;top:0;bottom:0;width:0;height:auto;border-left:2px solid var(--line);background:none;transform:none}
+  .fam-col:last-child::before{bottom:auto;height:28px}
+  .fam-col::after{content:"";position:absolute;left:0;top:26.5px;width:22px;border-top:2px solid var(--line)}
+  .stack{gap:0;margin:0;padding-left:14px}
+  .slot{padding:6px 0 0 24px}
+  .slot::before{content:"";position:absolute;left:0;top:0;bottom:0;width:0;height:auto;border-left:2px solid var(--line);background:none;transform:none}
+  .slot:last-child::before{bottom:auto;height:33px}
+  .slot::after{content:"";position:absolute;left:0;top:31.5px;width:22px;border-top:2px solid var(--line)}
+  .node{display:flex;flex-wrap:wrap;align-items:baseline;column-gap:8px;text-align:left;padding:9px 12px;border-radius:10px}
+  .node .t{font-size:15px}
+  .node .s{font-size:12.5px}
+  .node .g{flex-basis:100%;margin-top:2px}
+  .node.locked::after{top:-9px}
+}
 </style>
 </head>
 <body>
