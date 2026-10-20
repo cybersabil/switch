@@ -1,0 +1,684 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Cisco switch family tree (2026)</title>
+<style>
+:root{
+  --bg:#f7f6f2;--card:#ffffff;--text:#1f1e1b;--muted:#6b6a64;--border:#dedcd3;--line:#b4b2a9;--accent:#534AB7;
+  --xe-bg:#EEEDFE;--xe-bd:#7F77DD;--xe-tx:#3C3489;
+  --nx-bg:#FAECE7;--nx-bd:#D85A30;--nx-tx:#712B13;
+  --sb-bg:#F1EFE8;--sb-bd:#888780;--sb-tx:#444441;
+  --ok:#3B6D11;--ok-bg:#EAF3DE;--mid:#854F0B;--mid-bg:#FAEEDA;--no:#A32D2D;--no-bg:#FCEBEB;
+  --term:#185FA5;
+}
+@media (prefers-color-scheme: dark){
+  :root{
+    --bg:#1b1b19;--card:#262624;--text:#ecebe6;--muted:#a3a29b;--border:#3a3935;--line:#5F5E5A;--accent:#AFA9EC;
+    --xe-bg:#3C3489;--xe-bd:#AFA9EC;--xe-tx:#EEEDFE;
+    --nx-bg:#712B13;--nx-bd:#F0997B;--nx-tx:#FAECE7;
+    --sb-bg:#444441;--sb-bd:#B4B2A9;--sb-tx:#F1EFE8;
+    --ok:#C0DD97;--ok-bg:#27500A;--mid:#FAC775;--mid-bg:#633806;--no:#F7C1C1;--no-bg:#791F1F;
+    --term:#85B7EB;
+  }
+}
+*{box-sizing:border-box}
+html,body{margin:0;background:var(--bg);color:var(--text);font-family:system-ui,-apple-system,"Segoe UI",Roboto,"Noto Sans",sans-serif;line-height:1.55;-webkit-text-size-adjust:100%}
+header{max-width:1500px;margin:0 auto;padding:8px 16px 0;display:flex;flex-wrap:wrap;align-items:center;gap:6px 16px}
+h1{font-size:18px;margin:0;font-weight:650;white-space:nowrap}
+.hint{color:var(--muted);font-size:14px;margin:0}
+.bar{display:flex;flex-wrap:wrap;gap:6px;align-items:center}
+.bar .lbl{font-size:12.5px;color:var(--muted);margin-right:2px}
+.chip{border:1px solid var(--border);background:var(--card);color:var(--text);border-radius:999px;padding:3px 11px;font-size:12.5px;line-height:1.5;cursor:pointer}
+.chip.on{background:var(--accent);border-color:var(--accent);color:#fff}
+@media (prefers-color-scheme: dark){.chip.on{color:#1b1b19}}
+.legend{display:flex;flex-wrap:wrap;gap:12px;font-size:12.5px;color:var(--muted)}
+.gbtn{margin-left:auto}
+.sw{display:inline-block;width:12px;height:12px;border-radius:3px;vertical-align:-1px;margin-right:5px;border:1px solid}
+.sw.sb{background:var(--sb-bg);border-color:var(--sb-bd)}.sw.xe{background:var(--xe-bg);border-color:var(--xe-bd)}.sw.nx{background:var(--nx-bg);border-color:var(--nx-bd)}
+
+.layout{display:grid;grid-template-columns:1fr;gap:14px;max-width:1500px;margin:0 auto;padding:8px 16px 12px}
+@media (min-width:1100px){.layout{grid-template-columns:minmax(0,1fr) 440px}}
+
+.tree{background:var(--card);border:1px solid var(--border);border-radius:14px;padding:10px 14px 16px;min-width:0}
+.dir{font-size:12px;color:var(--muted);text-align:center;margin:0 0 8px}
+.root-wrap{display:flex;justify-content:center;position:relative;padding-bottom:28px}
+.root-wrap::after{content:"";position:absolute;bottom:0;left:50%;width:2px;height:28px;background:var(--line);transform:translateX(-1px)}
+.root-wrap .node{max-width:280px}
+.families{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:16px;position:relative;padding-top:28px}
+.families::before{content:"";position:absolute;top:0;left:12.5%;right:12.5%;height:2px;background:var(--line)}
+.fam-col{position:relative;min-width:0}
+.fam-col::before{content:"";position:absolute;top:-28px;left:50%;width:2px;height:28px;background:var(--line);transform:translateX(-1px)}
+.stack{display:flex;flex-direction:column;gap:18px;margin-top:18px}
+.slot{position:relative}
+.slot::before{content:"";position:absolute;top:-18px;left:50%;width:2px;height:18px;background:var(--line);transform:translateX(-1px)}
+@media (max-width:899px){
+  .families{grid-template-columns:repeat(2,minmax(0,1fr));gap:22px 14px}
+  .families::before,.fam-col::before,.root-wrap::after{display:none}
+  .root-wrap{padding-bottom:18px}
+  .families{padding-top:0}
+  .fam-col{background:var(--bg);border-radius:14px;padding:10px}
+}
+@media (max-width:560px){.families{grid-template-columns:1fr}}
+
+.node{display:block;width:100%;text-align:center;border:1px solid;border-radius:12px;padding:10px 8px;cursor:pointer;font:inherit;transition:transform .12s ease,box-shadow .12s ease,opacity .2s}
+.node:hover{transform:translateY(-1px);box-shadow:0 2px 10px rgba(0,0,0,.08)}
+.node:focus-visible{outline:3px solid var(--accent);outline-offset:2px}
+.node{position:relative}
+.node.active{outline:2px dashed var(--accent);outline-offset:2px}
+.node.locked{outline:3px solid var(--accent);outline-offset:3px}
+.node.locked::after{content:"Locked";position:absolute;top:-10px;right:8px;background:var(--accent);color:#fff;font-size:10.5px;font-weight:600;border-radius:999px;padding:1px 8px;line-height:16px}
+@media (prefers-color-scheme: dark){.node.locked::after{color:#1b1b19}}
+.lockbar{display:flex;gap:10px;align-items:center;justify-content:space-between;font-size:12.5px;line-height:1.45;border:1px dashed var(--border);color:var(--muted);border-radius:10px;padding:8px 10px;margin-bottom:12px}
+.lockbar.on{border:1px solid var(--accent);color:var(--text)}
+.lockbar .unlock{flex:none;font:inherit;font-size:13px;font-weight:600;border:1px solid var(--accent);background:var(--accent);color:#fff;border-radius:999px;padding:5px 14px;cursor:pointer}
+@media (prefers-color-scheme: dark){.lockbar .unlock{color:#1b1b19}}
+@media (max-width:1099px){.lockbar{display:none}}
+.node.sb{background:var(--sb-bg);border-color:var(--sb-bd);color:var(--sb-tx)}
+.node.xe{background:var(--xe-bg);border-color:var(--xe-bd);color:var(--xe-tx)}
+.node.nx{background:var(--nx-bg);border-color:var(--nx-bd);color:var(--nx-tx)}
+.node .t{display:block;font-weight:650;font-size:15px}
+.node .s{display:block;font-size:12.5px;opacity:.85}
+.node .g{display:block;font-size:11px;opacity:.75;margin-top:4px}
+.node.fam{border-width:2px}
+.node.dim{opacity:.25}
+.node.best{box-shadow:0 0 0 3px var(--ok)}
+
+.panel{background:var(--card);border:1px solid var(--border);border-radius:16px;padding:18px;min-width:0}
+@media (min-width:1100px){.panel{position:sticky;top:16px;max-height:calc(100vh - 32px);overflow:auto}}
+@media (max-width:1099px){
+  .panel{position:fixed;left:0;right:0;bottom:0;max-height:86vh;overflow:auto;border-radius:18px 18px 0 0;transform:translateY(105%);transition:transform .25s ease;z-index:50;box-shadow:0 -8px 30px rgba(0,0,0,.25);padding-top:10px}
+  .panel.open{transform:none}
+  .grab{display:block;width:44px;height:5px;border-radius:3px;background:var(--line);margin:0 auto 10px}
+}
+@media (min-width:1100px){.grab,.close{display:none !important}}
+.scrim{position:fixed;inset:0;background:rgba(0,0,0,.4);z-index:40;display:none}
+.scrim.open{display:block}
+.close{position:sticky;top:0;float:right;border:1px solid var(--border);background:var(--card);color:var(--text);border-radius:999px;width:34px;height:34px;font-size:18px;cursor:pointer;z-index:2}
+
+.p-top{display:flex;flex-wrap:wrap;gap:6px;align-items:center;margin-bottom:6px}
+.badge{font-size:12px;border-radius:999px;padding:2px 10px;border:1px solid}
+.badge.sb{background:var(--sb-bg);border-color:var(--sb-bd);color:var(--sb-tx)}
+.badge.xe{background:var(--xe-bg);border-color:var(--xe-bd);color:var(--xe-tx)}
+.badge.nx{background:var(--nx-bg);border-color:var(--nx-bd);color:var(--nx-tx)}
+.badge.plain{border-color:var(--border);color:var(--muted)}
+.panel h2{font-size:21px;margin:4px 0 2px;font-weight:650}
+.panel .sum{color:var(--muted);margin:0 0 10px;font-size:14.5px}
+.lvl{display:flex;align-items:center;gap:8px;font-size:12.5px;color:var(--muted);margin:6px 0 4px}
+.lvl .dots{display:flex;gap:3px}
+.lvl .dots i{width:14px;height:6px;border-radius:3px;background:var(--border)}
+.lvl .dots i.f{background:var(--accent)}
+.panel h3{font-size:14px;text-transform:none;margin:18px 0 8px;font-weight:650;border-bottom:1px solid var(--border);padding-bottom:5px}
+table.kv{width:100%;border-collapse:collapse;font-size:14px}
+table.kv td{padding:6px 4px;vertical-align:top;border-bottom:1px dashed var(--border)}
+table.kv td:first-child{width:36%;color:var(--muted);font-weight:500;padding-right:10px}
+table.kv code{font-family:ui-monospace,Menlo,Consolas,monospace;font-size:13px;background:var(--bg);padding:1px 5px;border-radius:5px}
+ul.l{margin:0;padding-left:18px;font-size:14px}
+ul.l li{margin:3px 0}
+.orgs{display:grid;grid-template-columns:1fr 1fr;gap:8px}
+.org{border-radius:10px;padding:8px 10px;font-size:13px}
+.org b{display:block;font-size:13.5px}
+.org .st{font-size:12px;font-weight:600}
+.org.s2{background:var(--ok-bg);color:var(--ok)}
+.org.s1{background:var(--mid-bg);color:var(--mid)}
+.org.s0{background:var(--no-bg);color:var(--no)}
+.purpose{display:inline-block;font-size:13px;font-weight:650;border-radius:8px;padding:3px 10px;background:var(--xe-bg);color:var(--xe-tx);border:1px solid var(--xe-bd);margin-bottom:6px}
+.note{font-size:13.5px;background:var(--bg);border-radius:10px;padding:10px 12px;margin-top:8px}
+.members{display:flex;flex-wrap:wrap;gap:6px}
+.members button{font:inherit;font-size:13px;border:1px solid var(--border);background:var(--bg);color:var(--text);border-radius:999px;padding:4px 10px;cursor:pointer}
+
+.term{color:var(--term);border-bottom:1px dotted var(--term);cursor:help}
+#tip{position:fixed;z-index:100;max-width:300px;background:var(--text);color:var(--bg);font-size:13px;line-height:1.45;padding:9px 11px;border-radius:10px;box-shadow:0 6px 20px rgba(0,0,0,.25);display:none;pointer-events:none}
+#tip b{display:block;margin-bottom:2px}
+
+.gloss{max-width:1500px;margin:0 auto;padding:0 16px 10px}
+.gloss .box{background:var(--card);border:1px solid var(--border);border-radius:14px;padding:10px 14px}
+.gloss summary{cursor:pointer;font-size:15px;font-weight:650;list-style:none;display:flex;align-items:center;gap:8px;flex-wrap:wrap}
+.gloss summary::-webkit-details-marker{display:none}
+.gloss summary::before{content:"▸";font-size:13px;color:var(--muted);transition:transform .15s}
+.gloss details[open] summary::before,.gloss .box[open] summary::before{transform:rotate(90deg)}
+.gcount{font-size:12.5px;font-weight:400;color:var(--muted)}
+.ghint{font-size:12.5px;font-weight:400;color:var(--muted);margin-left:auto}
+.gloss .box[open] .ghint{display:none}
+.gloss input{width:100%;max-width:420px;font:inherit;font-size:15px;padding:8px 12px;border-radius:10px;border:1px solid var(--border);background:var(--bg);color:var(--text);margin:10px 0 12px}
+.ggrid{display:grid;grid-template-columns:repeat(auto-fill,minmax(250px,1fr));gap:10px}
+.gi{background:var(--bg);border-radius:10px;padding:10px 12px;font-size:13.5px}
+.gi b{display:block;font-size:14px;margin-bottom:2px}
+footer{max-width:1500px;margin:0 auto;padding:0 16px 14px;font-size:12px;color:var(--muted)}
+</style>
+</head>
+<body>
+
+<header>
+  <h1>Cisco switch family tree (2026)</h1>
+  <div class="bar" id="orgbar">
+    <span class="lbl">Filter:</span>
+    <button class="chip on" data-org="all">All</button>
+    <button class="chip" data-org="0">Small org</button>
+    <button class="chip" data-org="1">Medium org</button>
+    <button class="chip" data-org="2">Large org</button>
+    <button class="chip" data-org="3">Mixed org</button>
+  </div>
+  <div class="legend">
+    <span><span class="sw sb"></span>Linux / cloud OS</span>
+    <span><span class="sw xe"></span>IOS-XE</span>
+    <span><span class="sw nx"></span>NX-OS</span>
+  </div>
+  <button class="chip gbtn" id="gbtn" type="button" aria-controls="gloss" aria-expanded="false">Glossary</button>
+</header>
+
+<div class="layout">
+  <main class="tree" id="tree" aria-label="Cisco switch tree"></main>
+  <aside class="panel" id="panel" aria-live="polite"></aside>
+</div>
+<div class="scrim" id="scrim"></div>
+
+<section class="gloss">
+  <details class="box" id="gloss">
+    <summary>Glossary <span class="gcount" id="gcount"></span><span class="ghint">Click to open</span></summary>
+    <input id="gq" type="search" placeholder="Search a word, like PoE, OSPF, SFP+..." aria-label="Glossary search">
+    <div class="ggrid" id="ggrid"></div>
+  </details>
+</section>
+
+<footer>Note: numbers like user count, PoE, stacking and speed are typical (approximate) values. They change from model to model. Before you buy or design a network, always check the Cisco datasheet for that exact model. Data is up to October 2026.</footer>
+
+<div id="tip" role="tooltip"></div>
+
+<script>
+const GLOSS = {
+  "Catalyst":["Catalyst","Cisco's brand for enterprise and business switches. Used for office, campus and branch networks (LAN)."],
+  "Nexus":["Nexus","Cisco's brand for data center switches. Runs NX-OS. Used for servers and storage."],
+  "Meraki":["Meraki","Cisco's cloud-managed product line. You set everything up from a web dashboard over the internet."],
+  "IE":["IE (Industrial Ethernet)","Tough (rugged) switches for places like factories, plants and railways."],
+  "IOS-XE":["IOS-XE","A Cisco operating system built on Linux. The classic IOS runs inside it as one program (IOSd). Used on Catalyst 9000 and IE switches."],
+  "NX-OS":["NX-OS","The operating system of Nexus switches. Made for data center features like VXLAN, vPC and Fibre Channel."],
+  "Linux OS":["Linux OS (small business)","The own operating system of small business switches. Its CLI looks like Cisco IOS, but it is not exactly the same."],
+  "L2":["Layer 2 switch","Sends frames using MAC addresses and creates VLANs. It does not route between VLANs."],
+  "L2+":["Layer 2+","Layer 2 plus a little routing: static routes and basic inter-VLAN routing. No routing protocols like OSPF."],
+  "L3":["Layer 3 switch","Routes traffic between VLANs (using SVIs) and can run routing protocols like OSPF. Does a router's job at switch speed."],
+  "Web GUI":["Web GUI","Set up the switch with a mouse by opening its IP address in a web browser. You do not need to remember CLI commands."],
+  "WebUI":["WebUI","The web browser interface of IOS-XE switches."],
+  "CLI":["CLI","Command Line Interface. You type commands over a console cable or SSH to set up the device. This is what you learn in CCNA."],
+  "PoE":["PoE (Power over Ethernet)","Gives electric power to a device through the same LAN cable: IP phones, CCTV cameras, WiFi APs. Basic PoE gives 15.4W per port."],
+  "PoE+":["PoE+ (802.3at)","Up to 30W per port. Mostly for WiFi access points and PTZ cameras."],
+  "PoE++":["PoE++ (802.3bt)","Up to 60W or 90W per port. For big access points, displays and LED lights."],
+  "UPOE":["UPOE (Universal PoE)","Cisco's PoE that gives 60W per port."],
+  "UPOE+":["UPOE+","PoE that gives 90W per port (802.3bt Type 4). For Wi-Fi 7 access points, displays and smart building devices."],
+  "4PPoE":["4PPoE","4-pair PoE. Sends power over all four wire pairs of the cable, so it gives more watts."],
+  "Full PoE":["Full PoE","The switch has enough power to give full PoE+ (30W) on every port at the same time."],
+  "PoE budget":["PoE budget","The total PoE power (in watts) of the whole switch. It is shared by all ports."],
+  "mGig":["mGig (Multigigabit)","A copper port that can run at 1G, 2.5G, 5G or 10G. Needed for Wi-Fi 6/7 access points."],
+  "GE":["GE (Gigabit Ethernet)","A port with 1 Gbps speed."],
+  "SFP":["SFP","A small slot where you plug in a fiber or copper module. 1G speed."],
+  "SFP+":["SFP+","A slot like SFP, but with 10G speed."],
+  "SFP28":["SFP28","A 25G module slot. A 10G module also works in it."],
+  "QSFP":["QSFP","A bigger module slot: QSFP+ is 40G, QSFP28 is 100G."],
+  "QSFP-DD":["QSFP-DD","A module slot for 400G or 800G. Used in core and data center switches."],
+  "Uplink":["Uplink","The port that connects a switch to a higher switch, the core or a router. It is usually faster than the other ports."],
+  "Stacking":["Stacking","Joining several physical switches with special cables so they work as one switch. One IP, one config, one place to manage."],
+  "StackWise":["StackWise","Cisco's stacking technology. The number in the name tells the stack bandwidth (in Gbps)."],
+  "StackWise-80":["StackWise-80","80 Gbps stack bandwidth. Used in 9200L."],
+  "StackWise-160":["StackWise-160","160 Gbps stack bandwidth. Used in 9200, up to 8 switches."],
+  "StackWise-320":["StackWise-320","320 Gbps stack bandwidth. Used in 9300L and some IE9300."],
+  "StackWise-480":["StackWise-480","480 Gbps stack bandwidth. Used in 9300, up to 8 switches."],
+  "StackWise-1T":["StackWise-1T","1 Tbps stack bandwidth. Used in 9300X."],
+  "StackWise Virtual":["StackWise Virtual","Joins two big switches (9400/9500/9600) with normal Ethernet links so they work as one switch. Gives backup (redundancy) in the core."],
+  "StackPower":["StackPower","Switches in a stack share their power supplies. If one power supply fails, power comes from the others."],
+  "Fixed":["Fixed switch","The ports are fixed in the box. You cannot add or remove line cards (sometimes the uplink module can be changed)."],
+  "Modular":["Modular switch","The chassis has slots. You add line cards and supervisors as you need them."],
+  "Chassis":["Chassis","The body or frame of a modular switch. It has slots for cards."],
+  "Supervisor":["Supervisor","The brain of a modular switch (CPU and control). With two supervisors, if one fails the other takes over."],
+  "Line card":["Line card","A card with ports that you put into a modular switch."],
+  "RU":["RU (Rack Unit)","A unit of height in a rack. 1RU = 1.75 inches."],
+  "Access":["Access layer","The layer where end devices (PC, phone, access point, camera) connect."],
+  "Distribution":["Distribution layer","Connects many access switches. Routing and rules (policies) are applied here."],
+  "Core":["Core layer","The backbone of the network. The fastest and most reliable part. All distribution switches connect to it."],
+  "Collapsed core":["Collapsed core","In a small or medium network, the core and distribution layers are in one switch."],
+  "Aggregation":["Aggregation","Joining the uplinks of many switches in one place."],
+  "Leaf":["Leaf switch","In a data center, the switch that servers connect to (Top of Rack)."],
+  "Spine":["Spine switch","In a data center, the backbone switch that connects all leaf switches."],
+  "ToR":["ToR (Top of Rack)","A switch placed at the top of a server rack. The servers in that rack connect to it."],
+  "Spine-leaf":["Spine-leaf design","A data center design where every leaf connects to every spine. Every server is the same number of hops away, so speed is predictable."],
+  "Border leaf":["Border leaf","The leaf switch that connects the data center to the outside (WAN, internet, campus)."],
+  "VLAN":["VLAN","Separate virtual networks (broadcast domains) on one physical switch. For example, HR and Accounts are kept apart."],
+  "Inter-VLAN routing":["Inter-VLAN routing","Routing traffic between two VLANs. On a Layer 3 switch this is done with SVIs."],
+  "SVI":["SVI","Switch Virtual Interface: a virtual interface with an IP address for a VLAN (interface vlan 10)."],
+  "Static routing":["Static routing","Writing routes by hand. If the network changes, they do not update by themselves."],
+  "RIP":["RIP","An old routing protocol that counts hops. For very small networks."],
+  "OSPF":["OSPF","A link-state routing protocol. Routers and Layer 3 switches share routes automatically. A main CCNA topic."],
+  "EIGRP":["EIGRP","Cisco's advanced routing protocol."],
+  "BGP":["BGP","The routing protocol of the internet and data centers. Works at very large scale."],
+  "VRF":["VRF","Separate routing tables inside one switch or router. Many separate networks in one box."],
+  "ACL":["ACL","Access Control List: rules that say which traffic is allowed and which is blocked."],
+  "QoS":["QoS","Quality of Service: gives priority to voice and video traffic so calls do not break."],
+  "802.1X":["802.1X","Login (authentication) on a port. A user or device gets no network until it is verified."],
+  "MACsec":["MACsec","Layer 2 encryption on switch links (802.1AE). 128-bit or 256-bit."],
+  "ETA":["ETA (Encrypted Traffic Analytics)","Finds malware patterns in encrypted traffic without decrypting it."],
+  "VXLAN":["VXLAN","Carries a Layer 2 network inside a tunnel over Layer 3. Used in data centers and SD-Access."],
+  "EVPN":["EVPN","The control plane for VXLAN (based on BGP). It tells which MAC/IP is where."],
+  "SD-Access":["SD-Access","Cisco's campus fabric. Automation based on rules (policies), run from Catalyst Center."],
+  "Catalyst Center":["Catalyst Center","Old name: DNA Center. An on-site controller that automates and monitors Catalyst switches."],
+  "Meraki Dashboard":["Meraki Dashboard","A cloud web dashboard to manage Meraki devices (and some Catalyst 9000 switches)."],
+  "Cisco Business Dashboard":["Cisco Business Dashboard","A free tool to manage small business switches, routers and access points from one place."],
+  "Mobile app":["Cisco Business mobile app","Set up and monitor the switch from your phone."],
+  "Bluetooth":["Bluetooth management","Manage 1200/1300 switches over Bluetooth from a phone or laptop, without a cable."],
+  "Nexus Dashboard":["Nexus Dashboard","The management and monitoring platform for Nexus data center switches."],
+  "App hosting":["App hosting","Running a Docker container or your own app inside the switch (on its x86 CPU and SSD)."],
+  "NETCONF":["NETCONF","A programmability protocol. Sends config to the switch using YANG models (automation)."],
+  "RESTCONF":["RESTCONF","Programmability over HTTP/REST. Control the switch with Python scripts."],
+  "Silicon One":["Silicon One","Cisco's new custom chip (ASIC). Very high speed, and the same design across many products."],
+  "ASIC":["ASIC","A special chip that forwards packets in hardware. Many times faster than a CPU."],
+  "UADP":["UADP","Cisco's programmable ASIC, used in most Catalyst 9000 switches."],
+  "Hypershield":["Hypershield","Cisco's AI-based security that is spread across the network. Firewall-like protection runs right inside the switch or DPU."],
+  "DPU":["DPU","Data Processing Unit. A separate processor that runs firewall and security services, so the main chip does not have to."],
+  "PQC":["PQC (Post-Quantum Cryptography)","Encryption that stays safe even against future quantum computers."],
+  "Smart switch":["Smart switch","A new Cisco term. A switch with extra power to run security and other services."],
+  "Tbps":["Tbps","Terabits per second. 1 Tbps = 1000 Gbps. The total switching capacity of a switch."],
+  "Network Essentials":["Network Essentials","The basic license for Catalyst 9000: Layer 2 and basic Layer 3 features."],
+  "Network Advantage":["Network Advantage","The higher license: full Layer 3 (BGP, VRF, MPLS and more) and advanced features."],
+  "DNA license":["DNA / Catalyst subscription","A time-based license (3, 5 or 7 years) needed for Catalyst Center and advanced features."],
+  "DIN rail":["DIN rail","A standard metal rail used to mount devices inside industrial panels."],
+  "Rugged":["Rugged","Built to handle heat, cold, dust and shaking (vibration)."],
+  "IP67":["IP67","Dust-proof, and keeps working even after being under water for a short time."],
+  "PRP":["PRP","Parallel Redundancy Protocol. Sends each packet over two networks at once, so no packets are lost."],
+  "HSR":["HSR","High-availability Seamless Redundancy. No packet loss in a ring. Used in power substations."],
+  "REP":["REP","Resilient Ethernet Protocol. If a link breaks in a ring network, it recovers very fast."],
+  "PROFINET":["PROFINET","An industrial Ethernet protocol for factory automation (for example, Siemens PLCs)."],
+  "EtherNet/IP":["EtherNet/IP","An industrial protocol (for example, Rockwell PLCs). Here IP means Industrial Protocol."],
+  "IEC 61850":["IEC 61850","The international standard for power substation automation."],
+  "PTP":["PTP (IEEE 1588)","Precision Time Protocol. Keeps clocks in sync down to microseconds. Used in utilities and factories."],
+  "Fibre Channel":["Fibre Channel","A protocol for storage networks (SAN)."],
+  "RoCE":["RoCE","RDMA over Converged Ethernet. Very low-delay data transfer for AI and storage."],
+  "ACI":["ACI","Application Centric Infrastructure. The SDN (controller-based) mode of Nexus switches."],
+  "vPC":["vPC","virtual Port Channel. Makes two Nexus switches look like one to a server (for backup)."],
+  "SMB":["SMB","Small and Medium Business."],
+  "Branch":["Branch","A small remote office of a company."],
+  "ISSU":["ISSU","In-Service Software Upgrade. Upgrade the software without stopping the network."],
+  "Embedded WLC":["Embedded WLC","A wireless controller that runs inside the switch. A small WiFi network does not need a separate controller."],
+  "Zero trust":["Zero trust","Nobody is trusted by default. Every user and device is checked every time."],
+  "DHCP server":["DHCP server","Gives IP addresses to devices automatically."],
+  "Auto Surveillance VLAN":["Auto Surveillance VLAN","Finds CCTV camera traffic by itself and puts it in a separate VLAN."],
+  "x86":["x86 CPU","An Intel/AMD type CPU. App hosting on the switch runs on it."],
+  "IOx":["IOx","Cisco's edge computing system. Runs apps on industrial switches and routers."],
+  "Cloud-native IOS-XE":["Cloud-native IOS-XE","An IOS-XE mode where a Catalyst switch is managed directly from the Meraki Dashboard."]
+};
+
+const ORG_LBL = ["Small org","Medium org","Large org","Mixed org (HQ + branches)"];
+const ST_LBL = ["Not a fit","Can be used","Best fit"];
+
+const N = {
+root:{name:"Cisco switches (2026)",sub:"Full tree",os:"sb",level:0,full:"Cisco switch portfolio, 2026",
+ summary:"Today's Cisco switches are split into 4 families. Each family has its own job and its own OS. In each column, the basic switch is at the top and the advanced one is at the bottom.",
+ kv:[["Small business","Catalyst 1200, 1300/1300X, Meraki MS. For small orgs and branches."],["Campus","Catalyst 9000 (IOS-XE). The main choice for office and campus networks (LAN)."],["Data center","Nexus 9000 (NX-OS). For servers, storage and AI clusters."],["Industrial","Catalyst IE (IOS-XE). For factories, plants, railways and substations."]],
+ points:["Old models like 2960, 3650, 3850, 4500 and 6500 are no longer sold. Catalyst 9000 has replaced them.","Most important for CCNA/CCNP: C9200, C9300, C9500.","Desktop: move the mouse over a switch to see its details. Click to lock it. Click again or press Unlock to unlock. On mobile, tap.","Hover or tap on the blue underlined words to see what they mean.","Use the filter at the top to see which switch is best for which size of organization."]},
+
+smb:{name:"Small business",sub:"Small org, shop",os:"sb",level:1,full:"Cisco small business switches",
+ summary:"Low-cost, simple switches with no license needed. You manage them with a Web GUI. For small offices, shops and branches.",
+ kv:[["OS","Linux OS (1200/1300), Meraki cloud firmware (MS)"],["Management","Web GUI, CLI, Cisco Business Dashboard, Mobile app, Meraki Dashboard"],["License","1200/1300: free. Meraki: license needed."],["Where","Shops, clinics, schools, small offices, branches"]],
+ points:["1200 = the most basic L2+ access switch.","1300/1300X = L3, stacking, 10G. It can also be the core of a small office.","Meraki MS = managed from the cloud. For companies with many sites.","SG250 → CBS250 → 1200, and SG350 → CBS350 → 1300."]},
+
+campus:{name:"Campus",sub:"Catalyst 9000",os:"xe",level:3,full:"Cisco Catalyst 9000 campus family",
+ summary:"The main family for enterprise networks (LAN). All of them run IOS-XE, and all have a UADP or Silicon One ASIC and an x86 CPU. One design from access to core.",
+ kv:[["OS","IOS-XE"],["Management","CLI, WebUI, Catalyst Center, Meraki Dashboard (some models), NETCONF/RESTCONF"],["License","Network Essentials / Network Advantage + DNA license (Catalyst subscription)"],["Where","Medium and large orgs, campuses, head offices, big branches"]],
+ points:["The bigger the number, the higher the layer: 2 = entry access, 3 = main access, 4 = modular access, 5 = core, 6 = large core.","X = next-generation, high-speed version (25G/100G/400G).","L = Lite version, with fixed uplinks and less stacking.","C9350 and C9610 are the new smart switches (launched in 2025)."]},
+
+dc:{name:"Data center",sub:"Nexus 9000",os:"nx",level:7,full:"Cisco Nexus 9000 data center family",
+ summary:"For servers, storage and AI clusters. Used in a spine-leaf design. Runs in NX-OS or ACI mode.",
+ kv:[["OS","NX-OS (or ACI mode)"],["Management","CLI, Nexus Dashboard, APIs"],["Speeds","From 1G to 800G"],["Where","Data centers of medium and large orgs, cloud providers, AI clusters"]],
+ points:["9300 = fixed leaf/ToR switches.","9400/9500/9800 = modular spine/core switches.","N9300 smart = switch + firewall (DPU) in one box.","Not for campus networks. Campus uses Catalyst."]},
+
+ind:{name:"Industrial",sub:"Catalyst IE",os:"xe",level:3,full:"Cisco Catalyst IE (Industrial Ethernet) family",
+ summary:"Rugged switches that work in heat, dust and vibration. They run the same IOS-XE as Catalyst 9000, so the IT team gets the same CLI.",
+ kv:[["OS","IOS-XE"],["Mounting","DIN rail (IE3x00) or 1RU rack (IE9300)"],["Management","CLI, WebUI, Catalyst Center"],["Where","Factories, plants, railways, oil & gas, power substations, traffic systems"]],
+ points:["IE3100 = the smallest (most compact).","IE3200/3300/3400 = the main switches for the factory floor.","IE9300 = rack-mounted. Aggregation for rings and substations.","Supports industrial protocols (PROFINET, EtherNet/IP) and ring backup (REP, PRP, HSR)."]},
+
+c1200:{fam:"smb",name:"Cat 1200",sub:"L2, web GUI",g:"L2+ · 1G · 10–50 users",os:"sb",level:1,full:"Cisco Catalyst 1200 Series",
+ summary:"Cisco's most basic managed business switch. A simple access switch with no license needed.",
+ parts:[["Cat","Catalyst: Cisco's brand for business/enterprise switches"],["1","The 1000 family: entry-level business switches (the 9000 family is for enterprise)"],["200","The lower level in the family (300 is above it)"],["L2","Layer 2 switch: works with MAC addresses, no routing (here it is L2+, so it also has static routing)"],["Web GUI","Manage it with a mouse in a web browser. No need for the CLI"],["Example: C1200-24P-4G","24 ports, P = PoE, 4G = 4 x 1G SFP uplinks"]],
+ specs:[["Layer","L2+"],["OS","Linux OS (not IOS-XE)"],["Users (approx)","10–50"],["Access ports","8 / 16 / 24 / 48 x GE"],["Port speed","1 Gbps"],["Uplinks","2–4 x SFP (1G) or 4 x SFP+ (10G), depending on the model"],["PoE","PoE+ (30W per port), also Full PoE models"],["Stacking","No"],["Routing","Static routing, basic Inter-VLAN routing"],["Management","Web GUI, CLI, Cisco Business Dashboard, Mobile app, Bluetooth"],["License","Free. No license needed, updates are free"],["Form factor","Fixed. 8-port desktop or 1RU rack"],["Replaces","CBS250 / SG250"]],
+ feats:["Basic business features like VLAN, QoS, ACL and 802.1X","Auto Surveillance VLAN: for CCTV","Small 8-port models have no fan, so they are quiet in an office","DHCP and basic security features","You can even buy it from online stores like Amazon"],
+ org:[[2,"Shops, clinics, accountant offices, cafes"],[1,"Only as an access switch"],[0,"Large companies use 9200/9300"],[1,"Small branch, ATM site"]],
+ purpose:{type:"Single purpose",uses:["Access switch: connects PCs, printers, IP phones, CCTV cameras and WiFi APs"]},
+ tip:"Its CLI looks like the IOS-XE you learn in CCNA, but it is not 100% the same. Good for learning to set up a switch for the first time with a Web GUI."},
+
+c1300:{fam:"smb",name:"Cat 1300/1300X",sub:"L3 lite, stack 4",g:"L3 · 1G/10G · 50–300 users",os:"sb",level:2,full:"Cisco Catalyst 1300 and 1300X Series",
+ summary:"A business switch one step above the 1200. It has L3 routing, stacking and 10G. It can also be the core of a small office. The 1300X is even higher.",
+ parts:[["Cat","Catalyst brand"],["1","The 1000 (business) family"],["300","The higher level in the family: more features (L3, stacking)"],["X","Extended/higher version: SFP28 ports, 25G stacking, OSPF"],["L3 lite","It is Layer 3, but does not have as many advanced L3 features as Catalyst 9000"],["Stack 4","Join 4 switches to make one logical switch"],["Example: C1300-24FP-4X","24 ports, FP = Full PoE, 4X = 4 x 10G SFP+"],["XS / XT models","XS = aggregation switch with 10G SFP+ ports, XT = 10G copper"],["MGP","Multigig + PoE ports"]],
+ specs:[["Layer","L3 (1300X: advanced L3)"],["OS","Linux OS"],["Users (approx)","50–300"],["Access ports","8–48 x GE, mGig models, all-10G models (XS/XT)"],["Uplinks","1300: 1G SFP or 10G SFP+. 1300X: 4 x SFP28 (10G uplink, 25G stacking)"],["PoE","PoE+, Full PoE. Some multigig models give more power"],["Stacking","1300: up to 4 switches (Cisco official). 1300X: 25G stacking (check the datasheet for the number)"],["Routing","Static routing, Inter-VLAN routing. 1300X: also OSPF"],["Management","Web GUI, CLI, Cisco Business Dashboard, Mobile app, Bluetooth"],["License","Free. No license needed"],["Form factor","Fixed, 1RU (small models are desktop)"],["Replaces","CBS350 / SG350"]],
+ feats:["Stacking: 4 x 48 = 192 ports in one closet, working like one switch","DHCP server inside the switch","Auto Surveillance VLAN","802.1X, ACL, QoS","Connects 1200 switches below it with 10G uplinks","1300X: dynamic routing with a firewall/router using OSPF"],
+ org:[[2,"Both core and access for the office"],[2,"Branch core or floor switch"],[1,"In the branches of a large company"],[2,"Standard core for branches"]],
+ purpose:{type:"Multi-purpose",uses:["Access switch","Collapsed core for a small office (Inter-VLAN routing)","10G Aggregation (XS/XT models)","High port count with Stacking","1300X: Branch core with OSPF"]},
+ tip:"For an office with 100 users, a 1300X as the core and 1200s as access is a low-cost, good combination. Check the model's datasheet for the exact list of routing protocols."},
+
+meraki:{fam:"smb",name:"Meraki MS",sub:"Cloud managed",g:"L2/L3 · Cloud · multi-site",os:"sb",level:2,full:"Cisco Meraki MS switches (and Catalyst 9300-M)",
+ summary:"Switches managed from the cloud. Open the box, connect the internet, and the whole config comes down by itself from the Meraki Dashboard.",
+ parts:[["MS","Meraki Switch"],["130","Small, low-cost access switch, also rugged models"],["150","Stackable access switch"],["Higher numbers (2xx, 3xx, 4xx)","More features, aggregation"],["9300-M","A Catalyst 9300 that comes with built-in Meraki cloud management"],["Cloud managed","Setup and monitoring from a dashboard over the internet, no CLI"]],
+ specs:[["Layer","MS130: L2. MS150 and up: L2/basic L3. 9300-M: full L3"],["OS","Meraki firmware (cloud). 9300-M: Cloud-native IOS-XE"],["Users","From 10 to thousands, across many sites"],["Access ports","8–48 x GE, mGig options"],["Uplinks","1G / 10G"],["PoE","PoE+, some models have 60W PoE++"],["Stacking","MS150 and up: yes. MS130: no"],["Management","Only the Meraki Dashboard (cloud)"],["License","Needed. If the Meraki license expires, the device stops working"],["Form factor","Compact, desktop, 1RU"]],
+ feats:["Zero-touch: set up without going to the switch","Thousands of sites in one dashboard","Firmware updates, alerts and topology happen automatically","One dashboard together with Meraki APs, MX firewalls and cameras","Easiest choice when the IT team is small"],
+ org:[[2,"If there is no IT staff"],[2,"Office with many floors"],[1,"Access layer, retail shops"],[2,"Retail chains, school chains, bank branches"]],
+ purpose:{type:"Single purpose",uses:["Cloud-managed Access switch, mostly for companies with many sites"]},
+ tip:"Not for CCNA CLI practice, because Meraki has almost no CLI. But you will see it a lot in jobs at retail and multi-site companies."},
+
+c9200:{fam:"campus",name:"C9200 / 9200L",sub:"Branch access",g:"L3 · 1G/mGig · 50–200 users",os:"xe",level:3,full:"Cisco Catalyst 9200 / 9200L / 9200CX",
+ summary:"The entry-level switch of the Catalyst 9000 family. The lowest-cost enterprise switch with IOS-XE, mainly for access in branches and small campuses.",
+ parts:[["C","Catalyst"],["9","9000 generation (made after 2017, IOS-XE)"],["2","The entry position in the family (2 < 3 < 4 < 5 < 6)"],["L","Lite: fixed uplinks, less stacking, lower cost"],["CX","Compact model: small, no fan, for places with little space"],["Example: C9200-48P-4X","48 ports, P = PoE+, 4X = 4 x 10G uplinks"]],
+ specs:[["Layer","L3 (features depend on the license)"],["OS","IOS-XE (Lite image)"],["Users (approx)","50–200"],["Access ports","24 / 48 x GE, some mGig models"],["Uplinks","9200: modular uplink module. 9200L: fixed 4 x 1G or 4 x 10G"],["PoE","PoE+ (30W), Full PoE options"],["Stacking","9200: StackWise-160 (8 switches). 9200L: StackWise-80"],["Routing","Static, RIP, OSPF (routed access), depending on the license"],["Management","CLI, WebUI, Catalyst Center, Meraki Dashboard (monitoring), NETCONF/RESTCONF"],["License","Network Essentials / Network Advantage + DNA license"],["Form factor","Fixed, 1RU"],["Replaces","2960-X / 2960-L"]],
+ feats:["MACsec-128 (not 256, that is in the 9300)","No ETA (the 9300 has it)","Secure boot and trust anchor","SD-Access edge support","Option for a backup (redundant) power supply on the 9200"],
+ org:[[1,"If you need enterprise features"],[2,"Floor or branch access"],[1,"Low-density access or branches"],[2,"Standard switch for branches"]],
+ purpose:{type:"Single purpose",uses:["Mainly an Access switch","Sometimes a Collapsed core in a small branch"]},
+ tip:"The 9200 CLI is the same IOS-XE you learn in CCNA. The Cat9000v image in EVE-NG is like a 9300/9500, and the commands stay the same."},
+
+c9300:{fam:"campus",name:"C9300 / 9300X",sub:"Main access",g:"L3 · 1G–100G · 100–10,000 users",os:"xe",level:4,full:"Cisco Catalyst 9300 / 9300X / 9300L / 9300-M",
+ summary:"The most widely used enterprise access switch in the world. The campus best seller. You find it in small to large organizations.",
+ parts:[["C9300","The main access switch of the Catalyst 9000 family (3 = main access)"],["X","Next generation: 25G/100G uplinks, StackWise-1T, more power"],["L","Lite: fixed uplinks, StackWise-320"],["M","Meraki-managed version"],["Port letters","P = PoE+, U = UPOE (60W), H = UPOE+ (90W), T = data only, X/XM = mGig"]],
+ specs:[["Layer","L3 (full)"],["OS","IOS-XE"],["Users (approx)","100–10,000 (depends on the stack and design)"],["Access ports","24 / 48 x GE, mGig (up to 10G), fiber models"],["Uplinks","Modular: 1G / 10G / 25G / 40G / 100G (100G on the 9300X)"],["PoE","PoE+ 30W, UPOE 60W, UPOE+ 90W (some models)"],["Stacking","StackWise-480 (9300), StackWise-1T (9300X), StackWise-320 (9300L), up to 8 switches + StackPower"],["Routing","OSPF, EIGRP, BGP, VRF (full with Network Advantage)"],["Management","CLI, WebUI, Catalyst Center, Meraki Dashboard (9300-M), NETCONF/RESTCONF"],["License","Network Essentials / Network Advantage + DNA license"],["Form factor","Fixed, 1RU, hot-swap power supplies and fans"],["Replaces","3650 / 3850"]],
+ feats:["MACsec-256 encryption","ETA: finds threats in encrypted traffic","App hosting: Docker containers on the switch","Embedded WLC: a controller for a small WiFi network inside the switch","SD-Access fabric edge/border","x86 CPU, UADP ASIC"],
+ org:[[1,"If there is budget and you need enterprise features"],[2,"Access or distribution"],[2,"Access switch on every floor"],[2,"Standard in both head office and branches"]],
+ purpose:{type:"Multi-purpose",uses:["Floor-by-floor Access switch in large orgs","Distribution switch in medium orgs","Collapsed core at small sites","Embedded WLC (wireless controller)","App hosting platform","SD-Access fabric edge"]},
+ tip:"You will see this one the most in CCNA/CCNP and in jobs. The Cat9000v image in EVE-NG is its virtual version."},
+
+c9350:{fam:"campus",name:"C9350 smart",sub:"Next-gen access",g:"L3 · Silicon One · 2025 launch",os:"xe",level:5,full:"Cisco C9350 Series Smart Switches",
+ summary:"The next generation of the 9300. A stackable access switch with a Silicon One chip, where security (Hypershield) can run right on the switch. Launched in 2025.",
+ parts:[["C9350","The new (Gen 3) fixed access switch of the 9000 family"],["Smart","A switch with extra power to run security and other services"],["Model letters","24P/48P = PoE+, 24U/48U = UPOE, 24T/48T = data, 48HX/48TX = mGig"],["Network modules","NM-8Y = 8 x 25G, NM-2C = 2 x 100G, NM-4C = 4 x 100G"]],
+ specs:[["Layer","L3 (full)"],["OS","IOS-XE (a different software file than the 9300)"],["Users (approx)","100–10,000+"],["Chip","Silicon One A100, ~1.3 Tbps"],["CPU","Intel 12th gen (x86)"],["Access ports","24 / 48 x GE or mGig"],["Uplinks","Network module: 25G or 100G"],["PoE","PoE+, UPOE models"],["Stacking","New StackWise, based on Ethernet/VXLAN, ~1.6 Tbps stack bandwidth"],["Management","CLI, Catalyst Center, Meraki Dashboard (unified management)"],["License","Essentials / Advantage (same levels for on-site and cloud)"],["Form factor","Fixed, 1RU, modular fans"]],
+ feats:["Hypershield security agent on the switch","PQC: future-proof encryption for MACsec/IPsec","Bigger ACL and routing tables than older models","Zero trust enforcement point","Energy-saving design"],
+ org:[[0,"Too much and too costly"],[2,"If you are building a new network"],[2,"New AI-ready campus"],[2,"New head office build"]],
+ purpose:{type:"Multi-purpose",uses:["Next-gen Access switch","Security enforcement point (Zero trust, Hypershield)","App hosting","Standard for brand-new campuses"]},
+ tip:"It is still new. The ideas are the same as the 9300, and the CLI is also IOS-XE. If an interview asks about new trends, naming it makes a good impression."},
+
+c9400:{fam:"campus",name:"C9400",sub:"Modular access",g:"L3 · Chassis · 500+ users/closet",os:"xe",level:6,full:"Cisco Catalyst 9400 / 9400X Series",
+ summary:"A modular chassis switch for access/distribution. Hundreds of ports and two supervisors in one box, for places with many users in one closet.",
+ parts:[["C9400","The modular access chassis of the 9000 family (4 = modular access)"],["C9404R / C9407R / C9410R","4 / 7 / 10 slot chassis"],["X","New high-speed supervisors (25G/100G uplinks)"],["Supervisor","The brain of the chassis. Two are used for backup"]],
+ specs:[["Layer","L3 (full)"],["OS","IOS-XE"],["Users (approx)","500–10,000 (high density in one building or closet)"],["Access ports","Up to ~384 in the 10-slot model"],["Speeds","1G, mGig (up to 10G), 25G/40G/100G uplinks on the supervisor"],["PoE","PoE+, UPOE, UPOE+ (90W)"],["Stacking","No. Instead it has two Supervisor cards and StackWise Virtual"],["Routing","OSPF, EIGRP, BGP, VRF"],["Management","CLI, WebUI, Catalyst Center"],["License","Network Essentials / Network Advantage + DNA license"],["Form factor","Modular Chassis with 4/7/10 slots"],["Replaces","Catalyst 4500E"]],
+ feats:["Two supervisors: if one fails, the other takes over (SSO)","Hot-swap line cards and power supplies","ISSU: upgrade without downtime","Very high PoE density","App hosting"],
+ org:[[0,"Too big and too costly"],[2,"Collapsed core or high-density access"],[2,"Hospitals, universities, factory offices"],[2,"Head office building"]],
+ purpose:{type:"Multi-purpose",uses:["High-density Access","Distribution","Collapsed core for medium orgs"]},
+ tip:"The best example to understand the difference between a modular and a fixed switch. Supervisor backup comes up in CCNP ENCOR."},
+
+c9500:{fam:"campus",name:"C9500",sub:"Core / distrib.",g:"L3 · 10G–400G · Backbone",os:"xe",level:7,full:"Cisco Catalyst 9500 / 9500X Series",
+ summary:"A fixed core switch. All ports are high speed (10G to 400G). The core of a medium org and the distribution layer of a large org.",
+ parts:[["C9500","The fixed core/distribution switch of the 9000 family (5 = core)"],["X","Silicon One chip, 400G ports"],["Example: C9500-48Y4C","48 x 25G (Y) + 4 x 100G (C)"],["Y / C / D","Y = 25G, C = 100G, D = 400G (port letters)"]],
+ specs:[["Layer","L3 (full)"],["OS","IOS-XE"],["Users","Users do not connect to it directly. Backbone for 1,000 to 50,000 devices"],["Ports","10/25G SFP, 40/100G QSFP, 400G QSFP-DD on the 9500X"],["PoE","No (it is a core switch)"],["Stacking","StackWise Virtual (2 switches act as one)"],["Routing","OSPF, EIGRP, BGP, VRF, MPLS (Network Advantage)"],["Management","CLI, Catalyst Center, NETCONF/RESTCONF"],["License","Network Essentials / Network Advantage + DNA license"],["Form factor","Fixed, 1RU/2RU, backup power supplies and fans"],["Replaces","4500-X, 6840-X"]],
+ feats:["Switching capacity in Tbps","VXLAN / EVPN support","SD-Access border and control plane","ISSU (with StackWise Virtual)","Low delay, high throughput"],
+ org:[[0,"Not needed"],[2,"Core switch"],[2,"Distribution or core"],[2,"Head office core"]],
+ purpose:{type:"Multi-purpose",uses:["Core for medium orgs","Distribution for large orgs","ToR/Leaf in a small data center","WAN and router Aggregation","SD-Access border"]},
+ tip:"Important for understanding the core layer, StackWise Virtual and OSPF design. The Cat9000v image also runs in 9500 mode."},
+
+c9600:{fam:"campus",name:"C9600 / C9610",sub:"Large core",g:"L3 · Chassis · 400G · up to 51.2 Tbps",os:"xe",level:8,full:"Cisco Catalyst 9600 / 9600X and C9610 Smart Switch",
+ summary:"The biggest campus core. Modular chassis with 400G ports. The C9610 is a new 10-slot smart switch that follows the Catalyst 6500 and Nexus 7700.",
+ parts:[["C9600","The biggest modular core of the 9000 family (6 = top)"],["C9606R","6-slot chassis"],["C9610","New 10-slot smart switch (2025)"],["X / SUP3","New supervisors with Silicon One"]],
+ specs:[["Layer","L3 (full)"],["OS","IOS-XE"],["Users","Backbone of a big campus: thousands to hundreds of thousands of devices"],["Ports","10/25/40/50/100/400G line cards"],["Capacity","C9610: ~51.2 Tbps chassis"],["PoE","No"],["Stacking","StackWise Virtual + two Supervisor cards"],["Chip","UADP (older supervisors), Silicon One (9600X, C9610)"],["Routing","OSPF, EIGRP, BGP, VRF, MPLS"],["Management","CLI, Catalyst Center. Meraki Dashboard support is planned for the C9610"],["License","Network Essentials / Network Advantage + DNA license"],["Form factor","Modular Chassis"],["Replaces","Catalyst 6500/6800 (and the C9610 also replaces Nexus 7700)"]],
+ feats:["Two supervisors, ISSU","PQC encryption (C9610)","Ready for Hypershield (C9610)","Very large route and ACL tables","Front-to-back airflow"],
+ org:[[0,"Not at all"],[1,"Only in very big medium-size campuses"],[2,"Bank head office, university, airport, big hospital"],[2,"Main core of the head office"]],
+ purpose:{type:"Multi-purpose",uses:["Large campus Core","Large Distribution","Core of a data center inside the campus","WAN edge Aggregation"]},
+ tip:"Older engineers often talk about the 6500. Today the 9600/C9610 has taken its place. This is useful in interviews."},
+
+n9300:{fam:"dc",name:"Nexus 9300",sub:"Leaf / ToR",g:"NX-OS · 1G–800G · fixed",os:"nx",level:7,full:"Cisco Nexus 9300 Series",
+ summary:"The most common data center switch. A fixed switch that connects servers as a leaf or top-of-rack switch.",
+ parts:[["N","Nexus"],["9","9000 generation"],["3","Fixed (1RU/2RU) leaf/ToR family"],["Example: N9K-C93180YC-FX3","180 = ~1.8 Tbps, Y = 25G ports, C = 100G ports, FX3 = chip generation"]],
+ specs:[["Layer","L2/L3 data center"],["OS","NX-OS or ACI mode"],["Users","Servers and VMs: from a few racks to thousands of racks"],["Ports","1/10/25/50/100/400/800G"],["Uplinks","40/100/400G"],["PoE","Usually no"],["Stacking","No. Uses vPC and a Spine-leaf fabric instead"],["Routing","OSPF, BGP, VXLAN EVPN"],["Management","CLI, Nexus Dashboard, APIs"],["License","NX-OS Essentials / Advantage / Premier, or ACI"],["Form factor","Fixed, 1RU/2RU"],["Extra","Unified ports: Fibre Channel 8/16/32G, RoCE, IP storage"]],
+ feats:["Very low delay (latency)","VXLAN EVPN fabric","Server dual-homing with vPC","Streaming telemetry","Full-speed (line-rate) MACsec","RoCE for AI and storage"],
+ org:[[0,"Only if there is a small data center"],[2,"Company data center"],[2,"Big data center, cloud provider"],[2,"Head office data center"]],
+ purpose:{type:"Multi-purpose",uses:["Leaf / ToR switch","Spine in a small data center","Border leaf","Storage network (Fibre Channel, RoCE)","AI cluster leaf"]},
+ tip:"The main switch for CCNP Data Center. The CLI is like IOS, but some commands are different (you must turn on features, like 'feature ospf')."},
+
+n9400:{fam:"dc",name:"Nexus 9400",sub:"Compact modular",g:"NX-OS · 400G · 4RU",os:"nx",level:8,full:"Cisco Nexus 9400 Series (N9408)",
+ summary:"A compact modular switch. 400G speed in just 4RU, for when you need modular but have little space.",
+ parts:[["N9400","Nexus compact modular family"],["9408","A 4RU system with 8 expansion modules"]],
+ specs:[["Layer","L2/L3 data center"],["OS","NX-OS"],["Ports","100G/400G, depending on the modules"],["Form factor","Modular, 4RU"],["Stacking","No"],["Management","CLI, Nexus Dashboard"],["License","NX-OS licenses"]],
+ feats:["Modular flexibility in a small space","Ready for 400G","Energy saving"],
+ org:[[0,"Not a fit"],[2,"Spine for a medium data center"],[2,"Spine / aggregation"],[1,"Regional data center"]],
+ purpose:{type:"Multi-purpose",uses:["Spine","Aggregation","Core of a small data center"]},
+ tip:"Think of it as the middle option between fixed (9300) and big modular (9500/9800)."},
+
+n9500:{fam:"dc",name:"Nexus 9500",sub:"Spine chassis",g:"NX-OS · 1G–400G · 4/8/16 slot",os:"nx",level:8,full:"Cisco Nexus 9500 Series (9504 / 9508 / 9516)",
+ summary:"A modular chassis for data centers. For the spine and core of large enterprises.",
+ parts:[["N9500","Nexus modular chassis family"],["9504 / 9508 / 9516","4 / 8 / 16 line card slots"]],
+ specs:[["Layer","L2/L3 data center"],["OS","NX-OS or ACI"],["Ports","1G to 400G line cards"],["Redundancy","Two Supervisor cards, fabric modules"],["Stacking","No"],["Routing","OSPF, BGP, VXLAN EVPN"],["Management","CLI, Nexus Dashboard"],["Form factor","Modular Chassis"],["Replaces","Nexus 7000"]],
+ feats:["Very high port density","Hot-swap cards","ISSU","Common as an ACI spine"],
+ org:[[0,"Not a fit"],[1,"In bigger medium-size data centers"],[2,"Big data center"],[2,"Main data center"]],
+ purpose:{type:"Multi-purpose",uses:["Spine","Data center Core","Aggregation"]},
+ tip:"Look at this one to understand the role of the spine in a spine-leaf design."},
+
+n9800:{fam:"dc",name:"Nexus 9800",sub:"400G/800G spine",g:"NX-OS · 400G/800G · Silicon One",os:"nx",level:10,full:"Cisco Nexus 9800 Series (9804 / 9808)",
+ summary:"The most high-end modular data center switch. 400G and 800G, for AI and hyperscale data centers.",
+ parts:[["N9800","Nexus's new modular family"],["9804 / 9808","4 / 8 slots"]],
+ specs:[["Layer","L3 data center"],["OS","NX-OS"],["Ports","400G and 800G"],["Chip","Silicon One"],["Form factor","Modular, distributed design"],["Stacking","No"],["Management","CLI, Nexus Dashboard"]],
+ feats:["Ready for 800G","Energy-saving distributed design","AI cluster networking"],
+ org:[[0,"Not a fit"],[0,"Not a fit"],[2,"Hyperscale, AI clusters, telecom"],[1,"Only the main data center"]],
+ purpose:{type:"Single purpose",uses:["High-speed Spine for AI and hyperscale data centers"]},
+ tip:"Not needed for CCNA. Just remember that it is the top-level data center switch."},
+
+n9300s:{fam:"dc",name:"N9300 smart",sub:"DPU security",g:"NX-OS · DPU · Hypershield",os:"nx",level:9,full:"Cisco N9300 Series Smart Switches",
+ summary:"A switch and a firewall in one. It has DPUs inside that run Cisco Hypershield security, so one smart switch can replace many switches and firewalls.",
+ parts:[["N9300","Nexus fixed family"],["Smart","Security services with a DPU"],["DPU","A separate processor that runs security services"]],
+ specs:[["Layer","L2/L3 data center"],["OS","NX-OS"],["Models","24 x 100G, and 48 x 25G top-of-rack"],["Services","~800 Gbps of stateful services (firewall and more) on the DPU"],["Backup (HA)","State sync between two smart switches"],["Management","CLI, Nexus Dashboard, Hypershield"],["Form factor","Fixed, ToR"]],
+ feats:["A firewall spread across every rack","Hypershield security","Live Protect: blocks a weakness before a patch comes out","Fewer boxes, less complexity"],
+ org:[[0,"Not a fit"],[1,"Data centers that need strong security"],[2,"Big data center, east-west security"],[1,"Main data center"]],
+ purpose:{type:"Dual purpose",uses:["Leaf / ToR switching","Spread-out firewall / security enforcement"]},
+ tip:"A new trend: network and security in one box. A good topic for future trends in interviews."},
+
+ie3100:{fam:"ind",name:"IE3100",sub:"Compact, DIN rail",g:"IOS-XE · 1G · rugged",os:"xe",level:3,full:"Cisco Catalyst IE3100 Rugged Series",
+ summary:"Cisco's most compact managed industrial switch. Placed near machines, in tight spaces.",
+ parts:[["IE","Industrial Ethernet"],["3","The 3000 family: mainstream industrial switches for DIN rails"],["100","The most compact in the family"],["DIN rail","Mounts on the metal rail of an industrial panel"]],
+ specs:[["Layer","L2 (some L3 features)"],["OS","IOS-XE"],["Ports","Up to ~20 x GE"],["PoE","PoE+ / 4PPoE models"],["Mounting","DIN rail"],["Environment","Rugged, works in extreme temperatures"],["Management","CLI, WebUI, Catalyst Center"],["License","Network Essentials + Catalyst subscription"]],
+ feats:["Industrial protocols: PROFINET, EtherNet/IP","Ring backup (REP)","Secure Equipment Access: remote access to machines with zero trust","Secure boot"],
+ org:[[1,"Small factory"],[2,"Factory floor"],[2,"Plants, machine builders"],[2,"Every plant site"]],
+ purpose:{type:"Single purpose",uses:["Machine-level Access switch (PLCs, sensors, cameras)"]},
+ tip:"The CLI is the same IOS-XE, so your CCNA knowledge works here too."},
+
+ie3x00:{fam:"ind",name:"IE3200-3400",sub:"Factory floor",g:"IOS-XE · 1G/10G · DIN rail",os:"xe",level:4,full:"Cisco Catalyst IE3200 / IE3300 / IE3400 Rugged Series",
+ summary:"The main industrial switches for the factory floor. They mount on a DIN rail and run the same IOS-XE as Catalyst 9000.",
+ parts:[["IE3200","Fixed L2 switch"],["IE3300","Modular: add ports with expansion modules, the X version has a 10G uplink"],["IE3400","Modular, advanced L3, edge computing (IOx)"],["IE3400H","Heavy Duty, IP67: works even in water and dust"]],
+ specs:[["Layer","IE3200/3300: L2 (L3 with a license). IE3400: L3"],["OS","IOS-XE"],["Ports","8 to 26 (with expansion modules)"],["Uplinks","1G, 10G on the IE3300-X"],["PoE","PoE+ / 4PPoE models"],["Mounting","DIN rail, IE3400H wall-mount IP67"],["Management","CLI, WebUI, Catalyst Center"],["License","Network Essentials / Network Advantage"]],
+ feats:["Ring backup: REP, PRP/HSR (some models)","Industrial protocols","Edge computing (IOx on the IE3400)","Secure boot, trust anchor"],
+ org:[[1,"Small factory"],[2,"Factory floor"],[2,"Big plants"],[2,"Plants + head office"]],
+ purpose:{type:"Multi-purpose",uses:["IE3200/3300: Access on the factory floor (single purpose)","IE3400: Access + L3 + edge computing (multi-purpose)"]},
+ tip:"In industrial networks, it is important to understand ring topology and REP."},
+
+ie9300:{fam:"ind",name:"IE9300",sub:"Rack, 10G aggr.",g:"IOS-XE · 1G/10G · 1RU",os:"xe",level:6,full:"Cisco Catalyst IE9300 Rugged Series (IE9310 / IE9320)",
+ summary:"A rack-mounted industrial switch with up to 28 ports of 1G/10G. Aggregation for industrial rings and power substations.",
+ parts:[["IE","Industrial Ethernet"],["9","9000 level (like Catalyst 9000)"],["9310","Fiber aggregation model"],["9320","L3, stackable, more features"],["Example: IE-9320-26S2C","26 SFP ports + 2 combo ports"]],
+ specs:[["Layer","L2 / L3 (IE9320)"],["OS","IOS-XE"],["Ports","Up to 28: 1G and 10G"],["Stacking","StackWise on the IE9320 (depends on the model)"],["PoE","Some models (PoE+/UPOE)"],["Mounting","1RU rack, rugged"],["Management","CLI, WebUI, Catalyst Center"],["Special","IEC 61850 (substation), PRP/HSR, PTP timing"]],
+ feats:["Certified for substations","Backup with no packet loss (PRP/HSR)","Exact timing (PTP)","Aggregation of the IE3x00 rings below it"],
+ org:[[0,"Not a fit"],[1,"Big factory"],[2,"Utilities, substations, big plants"],[2,"Core of the plant"]],
+ purpose:{type:"Multi-purpose",uses:["Industrial Aggregation","Distribution","Mini-core of a substation or plant"]},
+ tip:"If you want a job in the power/utility sector, remember the names IEC 61850 and PRP/HSR."}
+};
+
+const TREE = [["smb",["c1200","c1300","meraki"]],["campus",["c9200","c9300","c9350","c9400","c9500","c9600"]],["dc",["n9300","n9400","n9500","n9800","n9300s"]],["ind",["ie3100","ie3x00","ie9300"]]];
+const FAM_NAME = {smb:"Small business",campus:"Campus (Catalyst 9000)",dc:"Data center (Nexus)",ind:"Industrial (IE)"};
+const OS_NAME = {sb:"Linux / cloud OS",xe:"IOS-XE",nx:"NX-OS"};
+
+function esc(s){return String(s).replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;").replace(/"/g,"&quot;")}
+const KEYS = Object.keys(GLOSS).sort((a,b)=>b.length-a.length);
+const RX = new RegExp("(^|[^A-Za-z0-9])(" + KEYS.map(k=>esc(k).replace(/[.*+?^${}()|[\]\\\/]/g,"\\$&")).join("|") + ")(?![A-Za-z0-9])","g");
+function linkify(s){
+  return esc(s).replace(RX,(m,pre,k)=>{
+    const raw = k.replace(/&amp;/g,"&");
+    return GLOSS[raw] ? pre + '<span class="term" tabindex="0" data-k="' + esc(raw) + '">' + k + "</span>" : m;
+  });
+}
+
+function nodeBtn(id){
+  const n = N[id];
+  const isFam = !n.fam && id !== "root";
+  return '<button class="node ' + n.os + (isFam ? " fam" : "") + '" data-id="' + id + '">' +
+    '<span class="t">' + esc(n.name) + '</span><span class="s">' + esc(n.sub) + '</span>' +
+    (n.g ? '<span class="g">' + esc(n.g) + "</span>" : "") + "</button>";
+}
+function buildTree(){
+  let h = '<p class="dir">In each column: top = basic, bottom = advanced</p>';
+  h += '<div class="root-wrap">' + nodeBtn("root") + "</div><div class=\"families\">";
+  TREE.forEach(([f,items])=>{
+    h += '<div class="fam-col">' + nodeBtn(f) + '<div class="stack">';
+    items.forEach(id=>{ h += '<div class="slot">' + nodeBtn(id) + "</div>"; });
+    h += "</div></div>";
+  });
+  h += "</div>";
+  document.getElementById("tree").innerHTML = h;
+}
+
+function levelBar(l){
+  if(!l) return "";
+  let d = "";
+  for(let i=1;i<=10;i++) d += '<i class="' + (i<=l ? "f" : "") + '"></i>';
+  return '<div class="lvl"><span>Level ' + l + '/10</span><span class="dots">' + d + "</span></div>";
+}
+function kvTable(rows){
+  return '<table class="kv">' + rows.map(r=>"<tr><td>" + linkify(r[0]) + "</td><td>" + linkify(r[1]) + "</td></tr>").join("") + "</table>";
+}
+function list(arr){return '<ul class="l">' + arr.map(x=>"<li>" + linkify(x) + "</li>").join("") + "</ul>"}
+
+function render(id, keepScroll){
+  const n = N[id];
+  let h = '<span class="grab"></span><button class="close" aria-label="Close">×</button>';
+  h += locked
+    ? '<div class="lockbar on"><span><b>Locked</b> · Moving the mouse over other switches will not change these details. To see another switch, click on it.</span><button class="unlock" type="button">Unlock</button></div>'
+    : '<div class="lockbar"><span><b>Hover mode</b> · The details of the switch under your mouse are shown. Click a switch to lock it.</span></div>';
+  h += '<div class="p-top"><span class="badge ' + n.os + '">' + OS_NAME[n.os] + "</span>";
+  if(n.fam) h += '<span class="badge plain">' + esc(FAM_NAME[n.fam]) + "</span>";
+  h += "</div><h2>" + esc(n.full) + '</h2><p class="sum">' + linkify(n.summary) + "</p>" + levelBar(n.level);
+
+  if(!n.fam){
+    h += "<h3>" + (id==="root" ? "The 4 families" : "Family basics") + "</h3>" + kvTable(n.kv);
+    h += "<h3>Key points to remember</h3>" + list(n.points);
+    const members = id==="root" ? TREE.map(t=>t[0]) : (TREE.find(t=>t[0]===id)||[null,[]])[1];
+    h += "<h3>" + (id==="root" ? "Open a family" : "Switches in this family") + '</h3><div class="members">' +
+      members.map(m=>'<button data-go="' + m + '">' + esc(N[m].name) + "</button>").join("") + "</div>";
+  } else {
+    h += "<h3>What the name means</h3>" + kvTable(n.parts);
+    h += "<h3>Specs and features at a glance</h3>" + kvTable(n.specs);
+    h += "<h3>Key features</h3>" + list(n.feats);
+    h += '<h3>Which size of organization</h3><div class="orgs">' + n.org.map((o,i)=>
+      '<div class="org s' + o[0] + '"><b>' + ORG_LBL[i] + '</b><span class="st">' + ST_LBL[o[0]] + "</span><div>" + linkify(o[1]) + "</div></div>").join("") + "</div>";
+    h += '<h3>Purpose</h3><span class="purpose">' + esc(n.purpose.type) + "</span>" + list(n.purpose.uses);
+    h += '<div class="note"><b>Learning tip:</b> ' + linkify(n.tip) + "</div>";
+  }
+  const p = document.getElementById("panel");
+  const top = p.scrollTop;
+  p.innerHTML = h;
+  p.scrollTop = keepScroll ? top : 0;
+}
+
+const wide = window.matchMedia("(min-width: 1100px)");
+const finePointer = window.matchMedia("(hover: hover) and (pointer: fine)");
+let current = "root";
+let locked = false;
+
+function setActive(){
+  document.querySelectorAll(".node").forEach(b=>{
+    const on = b.dataset.id===current;
+    b.classList.toggle("active", on && !locked);
+    b.classList.toggle("locked", on && locked);
+  });
+}
+function show(id, keepScroll){ current = id; setActive(); render(id, keepScroll); }
+function lockOn(id){ const same = id===current; locked = true; show(id, same); }
+function unlock(){ locked = false; show(current, true); }
+function openSheet(){ if(!wide.matches){ document.getElementById("panel").classList.add("open"); document.getElementById("scrim").classList.add("open"); } }
+function closeSheet(){ document.getElementById("panel").classList.remove("open"); document.getElementById("scrim").classList.remove("open"); hideTip(); }
+function canHover(){ return wide.matches && finePointer.matches; }
+
+buildTree();
+show("root");
+
+const treeEl = document.getElementById("tree");
+treeEl.addEventListener("click", e=>{
+  const b = e.target.closest(".node"); if(!b) return;
+  const id = b.dataset.id;
+  if(!wide.matches){ show(id); openSheet(); return; }
+  if(locked && id===current) unlock();
+  else lockOn(id);
+});
+treeEl.addEventListener("mouseover", e=>{
+  if(!canHover() || locked) return;
+  const b = e.target.closest(".node"); if(!b || b.dataset.id===current) return;
+  show(b.dataset.id);
+});
+treeEl.addEventListener("focusin", e=>{
+  if(!wide.matches || locked) return;
+  const b = e.target.closest(".node"); if(b && b.dataset.id!==current) show(b.dataset.id);
+});
+
+document.getElementById("panel").addEventListener("click", e=>{
+  if(e.target.closest(".close")){ closeSheet(); return; }
+  if(e.target.closest(".unlock")){ unlock(); return; }
+  const g = e.target.closest("[data-go]");
+  if(g){ if(wide.matches) lockOn(g.dataset.go); else show(g.dataset.go); }
+});
+document.getElementById("scrim").addEventListener("click", closeSheet);
+document.addEventListener("keydown", e=>{ if(e.key==="Escape"){ if(wide.matches && locked) unlock(); else closeSheet(); } });
+
+document.getElementById("orgbar").addEventListener("click", e=>{
+  const c = e.target.closest(".chip"); if(!c) return;
+  document.querySelectorAll("#orgbar .chip").forEach(x=>x.classList.toggle("on", x===c));
+  const o = c.dataset.org;
+  document.querySelectorAll(".node").forEach(b=>{
+    const n = N[b.dataset.id];
+    b.classList.remove("dim","best");
+    if(o==="all" || !n.fam) return;
+    const s = n.org[+o][0];
+    if(s===0) b.classList.add("dim");
+    if(s===2) b.classList.add("best");
+  });
+});
+
+const tip = document.getElementById("tip");
+let tipFor = null;
+function showTip(el){
+  const g = GLOSS[el.dataset.k]; if(!g) return;
+  tip.innerHTML = "<b>" + esc(g[0]) + "</b>" + esc(g[1]);
+  tip.style.display = "block";
+  const r = el.getBoundingClientRect(), w = tip.offsetWidth, h = tip.offsetHeight;
+  let left = Math.max(8, Math.min(r.left + r.width/2 - w/2, window.innerWidth - w - 8));
+  let top = r.bottom + 8;
+  if(top + h > window.innerHeight - 8) top = Math.max(8, r.top - h - 8);
+  tip.style.left = left + "px"; tip.style.top = top + "px";
+  tipFor = el;
+}
+function hideTip(){ tip.style.display = "none"; tipFor = null; }
+document.addEventListener("mouseover", e=>{
+  if(!finePointer.matches) return;
+  const t = e.target.closest(".term");
+  if(t) showTip(t); else if(tipFor) hideTip();
+});
+document.addEventListener("click", e=>{
+  const t = e.target.closest(".term");
+  if(t){ e.stopPropagation(); if(tipFor===t && !finePointer.matches) hideTip(); else showTip(t); return; }
+  if(tipFor) hideTip();
+}, true);
+document.addEventListener("focusin", e=>{ const t = e.target.closest && e.target.closest(".term"); if(t) showTip(t); });
+document.getElementById("panel").addEventListener("scroll", hideTip);
+window.addEventListener("scroll", hideTip, {passive:true});
+window.addEventListener("resize", ()=>{ hideTip(); if(wide.matches) closeSheet(); });
+
+function buildGloss(q){
+  q = (q||"").trim().toLowerCase();
+  const items = Object.keys(GLOSS).sort((a,b)=>a.localeCompare(b)).filter(k=>{
+    const g = GLOSS[k]; return !q || k.toLowerCase().includes(q) || g[0].toLowerCase().includes(q) || g[1].toLowerCase().includes(q);
+  });
+  document.getElementById("ggrid").innerHTML = items.length ? items.map(k=>'<div class="gi"><b>' + esc(GLOSS[k][0]) + "</b>" + esc(GLOSS[k][1]) + "</div>").join("") : '<p class="hint">Nothing found.</p>';
+}
+buildGloss("");
+document.getElementById("gq").addEventListener("input", e=>buildGloss(e.target.value));
+document.getElementById("gcount").textContent = "(" + Object.keys(GLOSS).length + " words)";
+
+const glossEl = document.getElementById("gloss");
+const gbtn = document.getElementById("gbtn");
+glossEl.addEventListener("toggle", ()=>{
+  gbtn.classList.toggle("on", glossEl.open);
+  gbtn.setAttribute("aria-expanded", glossEl.open ? "true" : "false");
+  gbtn.textContent = glossEl.open ? "Close glossary" : "Glossary";
+});
+gbtn.addEventListener("click", ()=>{
+  if(glossEl.open){ glossEl.open = false; return; }
+  glossEl.open = true;
+  glossEl.scrollIntoView({behavior:"smooth", block:"start"});
+  setTimeout(()=>document.getElementById("gq").focus({preventScroll:true}), 350);
+});
+</script>
+</body>
+</html>
